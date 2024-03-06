@@ -3,8 +3,17 @@ import {
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     USER_LOADED_SUCCESS,
-    USER_LOADED_FAIL
+    USER_LOADED_FAIL,
+    AUTHENTICATED_SUCCESS,
+    AUTHENTICATED_FAIL,
+    LOGOUT
 } from './types'
+
+// export default function load_user() {
+//     return async function(dispatch) {
+//       // Function body here
+//     };
+//   }
 
 export const load_user = () => async dispatch => {
     if (localStorage.getItem('access')) {
@@ -66,5 +75,52 @@ export const login = (email, password) => async dispatch => {
             type: LOGIN_FAIL
         })
         console.log(`Error: ${err}`)
+    }
+}
+
+export function checkAuthenticated () {
+    return async function(dispatch) {
+        if (localStorage.getItem('access')) {
+            const config = {
+                headers: {
+                    'Content-Type' : 'application/json',
+                    'Accept' : 'application/json'
+                }
+            };
+
+            const body = JSON.stringify({token : localStorage.getItem('access')})
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/jwt/verify/`, body, config)
+
+            try {
+                if (response.data.code !== "token_not_valid") {
+                    dispatch({
+                        type: AUTHENTICATED_SUCCESS
+                    })
+                }
+                else {
+                    dispatch({
+                        type: AUTHENTICATED_FAIL
+                    })
+                }
+            }
+            catch (err) {
+                dispatch({
+                    type: AUTHENTICATED_FAIL
+                })
+            }
+        }
+        else {
+            dispatch({
+                type: AUTHENTICATED_FAIL
+            })
+        }
+    }
+}
+
+export function logout () {
+    return async function(dispatch) {
+        dispatch({
+            type: LOGOUT
+        })
     }
 }

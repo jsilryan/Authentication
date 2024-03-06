@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"
 import { connect } from "react-redux"
 import { login } from "../actions/auth";
 
-function Login({ login }) {
+function Login({ login, isAuthenticated }) {
+    const navigate = useNavigate() 
+
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -20,13 +22,20 @@ function Login({ login }) {
         })
     }
 
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/");
+        }
+    }, [isAuthenticated, navigate]);
+
     function onSubmit(e) {
         e.preventDefault()
         login(email, password)
     }
 
-    // Is user authenticated
-    // Redirect to home page
+    if (isAuthenticated) {
+        navigate("/")
+    }
 
 
     return (
@@ -70,7 +79,7 @@ function Login({ login }) {
 }
 
 const mapStateToProps = state => ({
-    // isAuthenticated
+    isAuthenticated: state.auth.isAuthenticated
 })
 
-export default connect(null, { login })(Login);
+export default connect(mapStateToProps, { login })(Login);
